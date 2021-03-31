@@ -1,9 +1,9 @@
 package book
 
 import (
+	"awesomeProject/database"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"awesomeProject/database"
 )
 
 type Book struct {
@@ -33,11 +33,12 @@ func GetBook(c *fiber.Ctx) error {
 
 func NewBook(c *fiber.Ctx) error {
 	db := database.DBConn
-	var book Book
-	book.Title = "1984"
-	book.Author = "George Orwell"
-	book.Rating = 5
+	book := new(Book)
 
+	if err := c.BodyParser(book); err != nil {
+		c.Status(503).SendString(err.Error())
+		return err
+	}
 	db.Create(&book)
 	return c.JSON(book)
 }
